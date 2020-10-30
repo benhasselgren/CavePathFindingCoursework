@@ -15,13 +15,13 @@ namespace CavePathFindingCoursework
 		// algorithm for a graph represented 
 		// using adjacency matrix 
 		// representation 
-		private static void dijkstra(int[,] adjacencyMatrix, int startVertex, List<Tuple<int, int>> coordinates)
+		private static void dijkstra(double[,] adjacencyMatrix, int startVertex, List<Tuple<int, int>> coordinates)
 		{
 			int nVertices = adjacencyMatrix.GetLength(0);
 
 			// shortestDistances[i] will hold the 
 			// shortest distance from src to i 
-			int[] shortestDistances = new int[nVertices];
+			double[] shortestDistances = new double[nVertices];
 
 			// added[i] will true if vertex i is 
 			// included / in shortest path tree 
@@ -60,14 +60,10 @@ namespace CavePathFindingCoursework
 				// always equal to startNode in 
 				// first iteration. 
 				int nearestVertex = -1;
-				int shortestDistance = int.MaxValue;
-				for (int vertexIndex = 0;
-						vertexIndex < nVertices;
-						vertexIndex++)
+				double shortestDistance = int.MaxValue;
+				for (int vertexIndex = 0;vertexIndex < nVertices; vertexIndex++)
 				{
-					if (!added[vertexIndex] &&
-						shortestDistances[vertexIndex] <
-						shortestDistance)
+					if (!added[vertexIndex] && shortestDistances[vertexIndex] < shortestDistance)
 					{
 						nearestVertex = vertexIndex;
 						shortestDistance = shortestDistances[vertexIndex];
@@ -85,7 +81,7 @@ namespace CavePathFindingCoursework
 						vertexIndex < nVertices;
 						vertexIndex++)
 				{
-					int edgeDistance = adjacencyMatrix[nearestVertex, vertexIndex];
+					double edgeDistance = adjacencyMatrix[nearestVertex, vertexIndex];
 
 					if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < shortestDistances[vertexIndex]))
 					{
@@ -101,7 +97,7 @@ namespace CavePathFindingCoursework
 		// A utility function to print 
 		// the constructed distances 
 		// array and shortest paths 
-		private static void printSolution(int startVertex, int[] distances, int[] parents, List<Tuple<int, int>> coordinates)
+		private static void printSolution(int startVertex, double[] distances, int[] parents, List<Tuple<int, int>> coordinates)
 		{
 			int nVertices = distances.Length;
 			Console.Write("Vertex\t Distance\tPath");
@@ -130,10 +126,11 @@ namespace CavePathFindingCoursework
 		// Driver Code 
 		public static void Main(String[] args)
 		{
-			//Data data = new Data("input1");
+			Data data = new Data("generated100-1");
+
 			//data.printMatrix();
 			
-			
+			/*
 			int[,] adjacencyMatrix = { { 0, 4, 0, 0, 0, 0, 0, 8, 0 },
 									{ 4, 0, 8, 0, 0, 0, 0, 11, 0 },
 									{ 0, 8, 0, 7, 0, 4, 0, 0, 2 },
@@ -144,7 +141,6 @@ namespace CavePathFindingCoursework
 									{ 8, 11, 0, 0, 0, 0, 1, 0, 7 },
 									{ 0, 0, 2, 0, 0, 0, 6, 7, 0 } };
 
-			string[] names = {"a", "b", "c", "d", "e", "f", "g", "h", "i"};
 			List<Tuple<int, int>> coordinates = new List<Tuple<int, int>>();
 
 			coordinates.Add(Tuple.Create(3,2));
@@ -156,8 +152,9 @@ namespace CavePathFindingCoursework
 			coordinates.Add(Tuple.Create(6,2));
 			coordinates.Add(Tuple.Create(1,2));
 			coordinates.Add(Tuple.Create(1,8));
+			*/
 
-			dijkstra(adjacencyMatrix, 0, coordinates);
+			dijkstra(data.AdjacencyMatrix, 0, data.Coordinates);
 		}
 	}
 }

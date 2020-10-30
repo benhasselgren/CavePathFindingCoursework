@@ -12,7 +12,7 @@ namespace CavePathFindingCoursework.Classes
         private string filename;
         private int numberOfCaverns;
         private List<Tuple<int, int>> coordinates =  new List<Tuple<int, int>>();
-        private int[,] adjacencyMatrix;
+        private double[,] adjacencyMatrix;
 		private static readonly int NO_PARENT = -1;
 
 		//-------------------------------Constructor-------------------------------
@@ -26,7 +26,7 @@ namespace CavePathFindingCoursework.Classes
         public string Filename { get => filename; set => filename = value; }
         public int NumberOfCaverns { get => numberOfCaverns; set => numberOfCaverns = value; }
         public List<Tuple<int, int>> Coordinates { get => coordinates; set => coordinates = value; }
-        public int[,] AdjacencyMatrix { get => adjacencyMatrix; set => adjacencyMatrix = value; }
+        public double[,] AdjacencyMatrix { get => adjacencyMatrix; set => adjacencyMatrix = value; }
 
 
         //-------------------------------Methods-------------------------------
@@ -48,7 +48,7 @@ namespace CavePathFindingCoursework.Classes
                     this.numberOfCaverns = Int32.Parse(fields[index]);
 
                     //Initialise adjacency matrix using width/height equal to number of caves
-                    this.adjacencyMatrix = new int[this.numberOfCaverns, this.numberOfCaverns];
+                    this.adjacencyMatrix = new double[this.numberOfCaverns, this.numberOfCaverns];
 
                     //Loop through all the coordinates
                     for(int i=1; i<=(this.numberOfCaverns); i++)
@@ -73,8 +73,16 @@ namespace CavePathFindingCoursework.Classes
                     {      
                         for(int inner=0; inner<this.numberOfCaverns; inner++)
                         {
-                            //Populate adjacency matrix
-                            adjacencyMatrix[outer, inner] = Int32.Parse(fields[index]);
+							//If value is equal to 1 then replace 1 with distance between coordinates
+							if(fields[index].Equals("1"))
+                            {
+								adjacencyMatrix[outer, inner] = (Math.Pow((coordinates[outer].Item1 - coordinates[inner].Item1), 2)+ Math.Pow((coordinates[outer].Item2 - coordinates[inner].Item2),2)); 
+                            }
+                            else
+                            {
+								//Populate adjacency matrix with 0
+								adjacencyMatrix[outer, inner] = Int32.Parse(fields[index]);
+							}
                             //Increae index by 1 every inner loop iteration
                             index++;
                         }
