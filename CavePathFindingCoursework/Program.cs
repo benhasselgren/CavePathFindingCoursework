@@ -1,4 +1,7 @@
-﻿using System;
+﻿using CavePathFindingCoursework.Classes;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 
 namespace CavePathFindingCoursework
 {
@@ -12,7 +15,7 @@ namespace CavePathFindingCoursework
 		// algorithm for a graph represented 
 		// using adjacency matrix 
 		// representation 
-		private static void dijkstra(int[,] adjacencyMatrix, int startVertex, string[] names)
+		private static void dijkstra(int[,] adjacencyMatrix, int startVertex, List<Tuple<int, int>> coordinates)
 		{
 			int nVertices = adjacencyMatrix.GetLength(0);
 
@@ -28,8 +31,7 @@ namespace CavePathFindingCoursework
 
 			// Initialize all distances as 
 			// INFINITE and added[] as false 
-			for (int vertexIndex = 0; vertexIndex < nVertices;
-												vertexIndex++)
+			for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
 			{
 				shortestDistances[vertexIndex] = int.MaxValue;
 				added[vertexIndex] = false;
@@ -85,37 +87,34 @@ namespace CavePathFindingCoursework
 				{
 					int edgeDistance = adjacencyMatrix[nearestVertex, vertexIndex];
 
-					if (edgeDistance > 0
-						&& ((shortestDistance + edgeDistance) <
-							shortestDistances[vertexIndex]))
+					if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < shortestDistances[vertexIndex]))
 					{
 						parents[vertexIndex] = nearestVertex;
-						shortestDistances[vertexIndex] = shortestDistance +
-														edgeDistance;
+						shortestDistances[vertexIndex] = shortestDistance + edgeDistance;
 					}
 				}
 			}
 
-			printSolution(startVertex, shortestDistances, parents, names);
+			printSolution(startVertex, shortestDistances, parents, coordinates);
 		}
 
 		// A utility function to print 
 		// the constructed distances 
 		// array and shortest paths 
-		private static void printSolution(int startVertex, int[] distances, int[] parents, string[] names)
+		private static void printSolution(int startVertex, int[] distances, int[] parents, List<Tuple<int, int>> coordinates)
 		{
 			int nVertices = distances.Length;
 			Console.Write("Vertex\t Distance\tPath");
-					Console.Write("\n" + names[startVertex] + " -> ");
-					Console.Write(names[nVertices - 1] + " \t\t ");
+					Console.Write("\n" + coordinates[startVertex] + " -> ");
+					Console.Write(coordinates[nVertices - 1] + " \t\t ");
 					Console.Write(distances[nVertices - 1] + "\t\t");
-					printPath(nVertices - 1, parents, names);
+					printPath(nVertices - 1, parents, coordinates);
 		}
 
 		// Function to print shortest path 
 		// from source to currentVertex 
 		// using parents array 
-		private static void printPath(int currentVertex, int[] parents, string[] names)
+		private static void printPath(int currentVertex, int[] parents, List<Tuple<int, int>> coordinates)
 		{
 
 			// Base case : Source node has 
@@ -124,13 +123,17 @@ namespace CavePathFindingCoursework
 			{
 				return;
 			}
-			printPath(parents[currentVertex], parents, names);
-			Console.Write(names[currentVertex] + " ");
+			printPath(parents[currentVertex], parents, coordinates);
+			Console.Write(coordinates[currentVertex] + " ");
 		}
 
 		// Driver Code 
 		public static void Main(String[] args)
 		{
+			//Data data = new Data("input1");
+			//data.printMatrix();
+			
+			
 			int[,] adjacencyMatrix = { { 0, 4, 0, 0, 0, 0, 0, 8, 0 },
 									{ 4, 0, 8, 0, 0, 0, 0, 11, 0 },
 									{ 0, 8, 0, 7, 0, 4, 0, 0, 2 },
@@ -142,7 +145,19 @@ namespace CavePathFindingCoursework
 									{ 0, 0, 2, 0, 0, 0, 6, 7, 0 } };
 
 			string[] names = {"a", "b", "c", "d", "e", "f", "g", "h", "i"};
-			dijkstra(adjacencyMatrix, 0, names);
+			List<Tuple<int, int>> coordinates = new List<Tuple<int, int>>();
+
+			coordinates.Add(Tuple.Create(3,2));
+			coordinates.Add(Tuple.Create(4,5));
+			coordinates.Add(Tuple.Create(7,6));
+			coordinates.Add(Tuple.Create(2,9));
+			coordinates.Add(Tuple.Create(9,4));
+			coordinates.Add(Tuple.Create(3,4));
+			coordinates.Add(Tuple.Create(6,2));
+			coordinates.Add(Tuple.Create(1,2));
+			coordinates.Add(Tuple.Create(1,8));
+
+			dijkstra(adjacencyMatrix, 0, coordinates);
 		}
 	}
 }
