@@ -26,7 +26,7 @@ namespace CavePathFindingCoursework.Classes
         public string Filename { get => filename; set => filename = value; }
         public int NumberOfCaverns { get => numberOfCaverns; set => numberOfCaverns = value; }
         public List<Tuple<int, int>> Coordinates { get => coordinates; set => coordinates = value; }
-        public double[,] AdjacencyMatrix { get => adjacencyMatrix; set => adjacencyMatrix = value; }
+        public double[,] AdjacencyMatrix { get => adjacencyMatrix; }
 
 
         //-------------------------------Methods-------------------------------
@@ -67,7 +67,7 @@ namespace CavePathFindingCoursework.Classes
 
                     //Loop through every connectivity row until end of file(n*2 iterations)
                     int outer;
-                    //Increae index by 1 every outer loop iteration
+                    //Increae index by 1 
                     index++;
                     for (outer = 0; outer<this.numberOfCaverns; outer++)
                     {      
@@ -76,14 +76,14 @@ namespace CavePathFindingCoursework.Classes
 							//If value is equal to 1 then replace 1 with distance between coordinates
 							if(fields[index].Equals("1"))
                             {
-								adjacencyMatrix[outer, inner] = (Math.Pow((coordinates[outer].Item1 - coordinates[inner].Item1), 2)+ Math.Pow((coordinates[outer].Item2 - coordinates[inner].Item2),2)); 
+								adjacencyMatrix[inner,outer] = Math.Sqrt((Math.Pow((coordinates[outer].Item1 - coordinates[inner].Item1), 2) + Math.Pow((coordinates[outer].Item2 - coordinates[inner].Item2),2))); 
                             }
                             else
                             {
 								//Populate adjacency matrix with 0
-								adjacencyMatrix[outer, inner] = Int32.Parse(fields[index]);
+								adjacencyMatrix[inner,outer] = 0;
 							}
-                            //Increae index by 1 every inner loop iteration
+                            //Increase index by 1 every inner loop iteration
                             index++;
                         }
                     }
@@ -102,7 +102,7 @@ namespace CavePathFindingCoursework.Classes
                 for (int inner = 0; inner < this.numberOfCaverns; inner++)
                 {
                     //Populate adjacency matrix
-                    Console.Write(String.Format("{0},", adjacencyMatrix[outer, inner].ToString()));
+                    Console.Write(String.Format("{0},", adjacencyMatrix[inner, outer].ToString()));
                 }
                 Console.Write("\n");
             }
@@ -114,13 +114,13 @@ namespace CavePathFindingCoursework.Classes
 		// algorithm for a graph represented 
 		// using adjacency matrix 
 		// representation 
-		private static void dijkstra(int[,] adjacencyMatrix, int startVertex, string[] names)
+		public void dijkstra(int startVertex)
 		{
-			int nVertices = adjacencyMatrix.GetLength(0);
+			int nVertices = this.adjacencyMatrix.GetLength(0);
 
 			// shortestDistances[i] will hold the 
 			// shortest distance from src to i 
-			int[] shortestDistances = new int[nVertices];
+			double[] shortestDistances = new double[nVertices];
 
 			// added[i] will true if vertex i is 
 			// included / in shortest path tree 
@@ -132,12 +132,12 @@ namespace CavePathFindingCoursework.Classes
 			// INFINITE and added[] as false 
 			for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
 			{
-				shortestDistances[vertexIndex] = int.MaxValue;
+				shortestDistances[vertexIndex] = double.MaxValue;
 				added[vertexIndex] = false;
 			}
 
 			// Distance of source vertex from 
-			// itself is always 0 
+			// itself   is always 0 
 			shortestDistances[startVertex] = 0;
 
 			// Parent array to store shortest 
@@ -159,18 +159,20 @@ namespace CavePathFindingCoursework.Classes
 				// always equal to startNode in 
 				// first iteration. 
 				int nearestVertex = -1;
-				int shortestDistance = int.MaxValue;
-				for (int vertexIndex = 0;
-						vertexIndex < nVertices;
-						vertexIndex++)
+				double shortestDistance = int.MaxValue;
+				for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
 				{
-					if (!added[vertexIndex] &&
-						shortestDistances[vertexIndex] <
-						shortestDistance)
+					if (!added[vertexIndex] && shortestDistances[vertexIndex] < shortestDistance)
 					{
 						nearestVertex = vertexIndex;
 						shortestDistance = shortestDistances[vertexIndex];
 					}
+				}
+
+				//If nothing found then all paths found and break out of loop
+				if (nearestVertex == -1)
+				{
+					break;
 				}
 
 				// Mark the picked vertex as 
@@ -184,7 +186,7 @@ namespace CavePathFindingCoursework.Classes
 						vertexIndex < nVertices;
 						vertexIndex++)
 				{
-					int edgeDistance = adjacencyMatrix[nearestVertex, vertexIndex];
+					double edgeDistance = this.adjacencyMatrix[nearestVertex, vertexIndex];
 
 					if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < shortestDistances[vertexIndex]))
 					{
@@ -194,36 +196,37 @@ namespace CavePathFindingCoursework.Classes
 				}
 			}
 
-			printSolution(startVertex, shortestDistances, parents, names);
+			printSolution(startVertex, shortestDistances, parents);
 		}
+
+		//-------------------------------Helper Methods-------------------------------
 
 		// A utility function to print 
 		// the constructed distances 
 		// array and shortest paths 
-		private static void printSolution(int startVertex, int[] distances, int[] parents, string[] names)
+		public static void printSolution(int startVertex, double[] distances, int[] parents)
 		{
 			int nVertices = distances.Length;
-			Console.Write("Vertex\t Distance\tPath");
-			Console.Write("\n" + names[startVertex] + " -> ");
-			Console.Write(names[nVertices - 1] + " \t\t ");
-			Console.Write(distances[nVertices - 1] + "\t\t");
-			printPath(nVertices - 1, parents, names);
+			Console.Write("Vertex\t\t Distance\t\tPath");
+			Console.Write("\n" + (startVertex + 1) + " -> ");
+			Console.Write(nVertices + " \t ");
+			Console.Write(distances[nVertices - 1] + "\t");
+			printPath(nVertices - 1, parents);
 		}
 
 		// Function to print shortest path 
 		// from source to currentVertex 
 		// using parents array 
-		private static void printPath(int currentVertex, int[] parents, string[] names)
+		private static void printPath(int currentVertex, int[] parents)
 		{
-
-			// Base case : Source node has 
-			// been processed 
+			// Base case : Source node has  
+			// been processed  
 			if (currentVertex == NO_PARENT)
 			{
 				return;
 			}
-			printPath(parents[currentVertex], parents, names);
-			Console.Write(names[currentVertex] + " ");
+			printPath(parents[currentVertex], parents);
+			Console.Write(currentVertex + 1 + " ");
 		}
 	}
 }
