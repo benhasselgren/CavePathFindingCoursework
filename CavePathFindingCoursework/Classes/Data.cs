@@ -1,12 +1,18 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Text;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace CavePathFindingCoursework.Classes
 {
-    class Data
+	/// <summary>
+	/// Class <c>Data</c> 
+	/// Class that contains the data structure of a cave system
+	/// Includes methods that find the quickes path through a cave system. Includes utility methods that help with debugging.
+	/// </summary>
+	class Data
     {
         //-------------------------------Instance Variables-------------------------------
         private string filename;
@@ -14,8 +20,9 @@ namespace CavePathFindingCoursework.Classes
         private List<Tuple<int, int>> coordinates =  new List<Tuple<int, int>>();
         private double[,] adjacencyMatrix;
 		private static readonly int NO_PARENT = -1;
+		private string quickestPath;
 
-		//-------------------------------Constructor-------------------------------
+		//-------------------------------Constructors-------------------------------
 		public Data(string filename)
         {
             this.filename = filename;
@@ -29,91 +36,99 @@ namespace CavePathFindingCoursework.Classes
         public double[,] AdjacencyMatrix { get => adjacencyMatrix; }
 
 
-        //-------------------------------Methods-------------------------------
-        private void readFile()
+		//-------------------------------Methods-------------------------------
+		/// <summary>
+		/// Method <c>readFile</c> 
+		/// Reads in a .cav file and creates an adjacency matrix. Replaces 1's in matrix with euclidian distances between the two coordinates.
+		/// </summary>
+		private void readFile()
         {
-            using (TextFieldParser parser = new TextFieldParser(@String.Format("../../../../{0}.cav", this.filename)))
-            {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(",");
-                while (!parser.EndOfData)
-                {
-                    //Tracks the file position
-                    int index = 0;
+				string filepath = String.Format("../../../../{0}.cav", this.filename);
+			if (File.Exists(filepath))
+			{
 
-                    //Processing row
-                    string[] fields = parser.ReadFields();
+				using (TextFieldParser parser = new TextFieldParser(@filepath))
+				{
+					parser.TextFieldType = FieldType.Delimited;
+					parser.SetDelimiters(",");
+					while (!parser.EndOfData)
+					{
+						//Tracks the file position
+						int index = 0;
 
-                    //First value in row equals number of caverns (n*2)
-                    this.numberOfCaverns = Int32.Parse(fields[index]);
+						//Processing row
+						string[] fields = parser.ReadFields();
 
-                    //Initialise adjacency matrix using width/height equal to number of caves
-                    this.adjacencyMatrix = new double[this.numberOfCaverns, this.numberOfCaverns];
+						//First value in row equals number of caverns (n*2)
+						this.numberOfCaverns = Int32.Parse(fields[index]);
 
-                    //Loop through all the coordinates
-                    for(int i=1; i<=(this.numberOfCaverns); i++)
-                    {
-                        //Increase index by 1 and get x coord
-                        index++;
-                        int x = Int32.Parse(fields[index]);
+						//Initialise adjacency matrix using width/height equal to number of caves
+						this.adjacencyMatrix = new double[this.numberOfCaverns, this.numberOfCaverns];
 
-                        //Increase index by 1 and get y coord
-                        index++;
-                        int y = Int32.Parse(fields[index]);
+						//Loop through all the coordinates
+						for (int i = 1; i <= (this.numberOfCaverns); i++)
+						{
+							//Increase index by 1 and get x coord
+							index++;
+							int x = Int32.Parse(fields[index]);
 
-                        //Add new coordinate to list
-                        this.coordinates.Add(new Tuple<int, int>(x,y));
-                    }
+							//Increase index by 1 and get y coord
+							index++;
+							int y = Int32.Parse(fields[index]);
 
-                    //Loop through every connectivity row until end of file(n*2 iterations)
-                    int outer;
-                    //Increae index by 1 
-                    index++;
-                    for (outer = 0; outer<this.numberOfCaverns; outer++)
-                    {      
-                        for(int inner=0; inner<this.numberOfCaverns; inner++)
-                        {
-							//If value is equal to 1 then replace 1 with distance between coordinates
-							if(fields[index].Equals("1"))
-                            {
-								adjacencyMatrix[inner,outer] = Math.Sqrt((Math.Pow((coordinates[outer].Item1 - coordinates[inner].Item1), 2) + Math.Pow((coordinates[outer].Item2 - coordinates[inner].Item2),2))); 
-                            }
-                            else
-                            {
-								//Populate adjacency matrix with 0
-								adjacencyMatrix[inner,outer] = 0;
+							//Add new coordinate to list
+							this.coordinates.Add(new Tuple<int, int>(x, y));
+						}
+
+						//Loop through every connectivity row until end of file(n*2 iterations)
+						int outer;
+						//Increae index by 1 
+						index++;
+						for (outer = 0; outer < this.numberOfCaverns; outer++)
+						{
+							for (int inner = 0; inner < this.numberOfCaverns; inner++)
+							{
+								//If value is equal to 1 then replace 1 with euclidian distance between coordinates
+								if (fields[index].Equals("1"))
+								{
+									adjacencyMatrix[inner, outer] = Math.Sqrt((Math.Pow((coordinates[outer].Item1 - coordinates[inner].Item1), 2) + Math.Pow((coordinates[outer].Item2 - coordinates[inner].Item2), 2)));
+								}
+								else
+								{
+									//Populate adjacency matrix with 0
+									adjacencyMatrix[inner, outer] = 0;
+								}
+								//Increase index by 1 every inner loop iteration
+								index++;
 							}
-                            //Increase index by 1 every inner loop iteration
-                            index++;
-                        }
-                    }
-
-                    Console.Write("Finished reading file\n");
-                }
-            }
-        }
-
-        public void printMatrix()
-        {
-            int outer;
-            Console.Write("{\n");
-            for (outer = 0; outer < this.numberOfCaverns; outer++)
+						}
+					}
+				}
+			}
+            else
             {
-                for (int inner = 0; inner < this.numberOfCaverns; inner++)
-                {
-                    //Populate adjacency matrix
-                    Console.Write(String.Format("{0},", adjacencyMatrix[inner, outer].ToString()));
-                }
-                Console.Write("\n");
-            }
-            Console.Write("}");
-        }
+				//Throw no file exists given exception
+				throw new Exception(String.Format("{0}.cav does not exist. Try another filename", this.filename));
+			}
+		}
 
-		// Function that implements Dijkstra's 
-		// single source shortest path 
-		// algorithm for a graph represented 
-		// using adjacency matrix 
-		// representation 
+		/// <summary>
+		/// Method <c>writeFile</c> 
+		/// Writes the quickest path through a cavern system to a .csn file
+		/// </summary>
+		public void writeFile()
+        {
+			string filepath = String.Format("../../../../{0}.csn", this.filename);
+			using (StreamWriter writer = new StreamWriter(new FileStream(filepath,FileMode.Create, FileAccess.Write)))
+			{
+				writer.WriteLine(this.quickestPath.Trim());
+			}
+		}
+
+		/// <summary>
+		/// Method <c>dijkstra</c> 
+		/// Implements Dijkstra's algorithm for a graph represented using adjacency matrix representation
+		/// </summary>
 		public void dijkstra(int startVertex)
 		{
 			int nVertices = this.adjacencyMatrix.GetLength(0);
@@ -182,9 +197,7 @@ namespace CavePathFindingCoursework.Classes
 				// Update dist value of the 
 				// adjacent vertices of the 
 				// picked vertex. 
-				for (int vertexIndex = 0;
-						vertexIndex < nVertices;
-						vertexIndex++)
+				for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
 				{
 					double edgeDistance = this.adjacencyMatrix[nearestVertex, vertexIndex];
 
@@ -196,37 +209,64 @@ namespace CavePathFindingCoursework.Classes
 				}
 			}
 
-			printSolution(startVertex, shortestDistances, parents);
+			//Store quickest path as string
+			returnPath(nVertices - 1, parents);
+			//Print the quickest path to console
+			printQuickestPath(startVertex, shortestDistances, parents);
 		}
 
-		//-------------------------------Helper Methods-------------------------------
+		//-------------------------------Utility Methods-------------------------------
 
-		// A utility function to print 
-		// the constructed distances 
-		// array and shortest paths 
-		public static void printSolution(int startVertex, double[] distances, int[] parents)
+		/// <summary>
+		/// Utility Method <c>printMatrix</c> 
+		/// Prints the adjacency matrix to console in a readable format. (Good for smaller matrices)
+		/// </summary>
+		public void printMatrix()
+		{
+			int outer;
+			Console.Write("{\n");
+			for (outer = 0; outer < this.numberOfCaverns; outer++)
+			{
+				for (int inner = 0; inner < this.numberOfCaverns; inner++)
+				{
+					//Populate adjacency matrix
+					Console.Write(String.Format("{0},", adjacencyMatrix[inner, outer].ToString()));
+				}
+				Console.Write("\n");
+			}
+			Console.Write("}");
+		}
+
+		/// <summary>
+		/// Utility Method <c>printSolution</c> 
+		/// Prints the shortest path and other information to console
+		/// </summary>
+		private void printQuickestPath(int startVertex, double[] distances, int[] parents)
 		{
 			int nVertices = distances.Length;
 			Console.Write("Vertex\t\t Distance\t\tPath");
 			Console.Write("\n" + (startVertex + 1) + " -> ");
 			Console.Write(nVertices + " \t ");
-			Console.Write(distances[nVertices - 1] + "\t");
-			printPath(nVertices - 1, parents);
+			Console.Write(Math.Round(distances[nVertices - 1],2) + "\t\t\t" + this.quickestPath.Trim());
 		}
 
-		// Function to print shortest path 
-		// from source to currentVertex 
-		// using parents array 
-		private static void printPath(int currentVertex, int[] parents)
+		/// <summary>
+		/// Utility Method <c>returnPath</c> 
+		/// Returns the quickest path from source to target in a format which can be read to file. 
+		/// </summary>
+		private void returnPath(int currentVertex, int[] parents)
 		{
-			// Base case : Source node has  
-			// been processed  
+			//Base-case: current cave equals source 
 			if (currentVertex == NO_PARENT)
 			{
 				return;
 			}
-			printPath(parents[currentVertex], parents);
-			Console.Write(currentVertex + 1 + " ");
+
+			//Recursive call
+			returnPath(parents[currentVertex], parents);
+
+			//string containing path
+			this.quickestPath = String.Format("{0} {1}", this.quickestPath, (currentVertex+1));
 		}
 	}
 }
