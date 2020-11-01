@@ -35,7 +35,6 @@ namespace CavePathFindingCoursework.Classes
         public List<Tuple<int, int>> Coordinates { get => coordinates; set => coordinates = value; }
         public double[,] AdjacencyMatrix { get => adjacencyMatrix; }
 
-
 		//-------------------------------Methods-------------------------------
 		/// <summary>
 		/// Method <c>readFile</c> 
@@ -43,38 +42,33 @@ namespace CavePathFindingCoursework.Classes
 		/// </summary>
 		private void readFile()
         {
-				string filepath = String.Format("../../../../{0}.cav", this.filename);
+			string filepath = String.Format("../../../../{0}.cav", this.filename);
 			if (File.Exists(filepath))
 			{
 
-				using (TextFieldParser parser = new TextFieldParser(@filepath))
+				using (StreamReader sr = new StreamReader(@filepath))
 				{
-					parser.TextFieldType = FieldType.Delimited;
-					parser.SetDelimiters(",");
-					while (!parser.EndOfData)
+					while (sr.Peek() >= 0)
 					{
 						//Tracks the file position
 						int index = 0;
 
-						//Processing row
-						string[] fields = parser.ReadFields();
-
 						//First value in row equals number of caverns (n*2)
-						this.numberOfCaverns = Int32.Parse(fields[index]);
+						this.numberOfCaverns = Int32.Parse(textSeperator(sr));
 
 						//Initialise adjacency matrix using width/height equal to number of caves
 						this.adjacencyMatrix = new double[this.numberOfCaverns, this.numberOfCaverns];
-
+						
 						//Loop through all the coordinates
 						for (int i = 1; i <= (this.numberOfCaverns); i++)
 						{
 							//Increase index by 1 and get x coord
 							index++;
-							int x = Int32.Parse(fields[index]);
+							int x = Int32.Parse(textSeperator(sr));
 
 							//Increase index by 1 and get y coord
 							index++;
-							int y = Int32.Parse(fields[index]);
+							int y = Int32.Parse(textSeperator(sr));
 
 							//Add new coordinate to list
 							this.coordinates.Add(new Tuple<int, int>(x, y));
@@ -89,7 +83,7 @@ namespace CavePathFindingCoursework.Classes
 							for (int inner = 0; inner < this.numberOfCaverns; inner++)
 							{
 								//If value is equal to 1 then replace 1 with euclidian distance between coordinates
-								if (fields[index].Equals("1"))
+								if ((textSeperator(sr)).Equals("1"))
 								{
 									adjacencyMatrix[inner, outer] = Math.Sqrt((Math.Pow((coordinates[outer].Item1 - coordinates[inner].Item1), 2) + Math.Pow((coordinates[outer].Item2 - coordinates[inner].Item2), 2)));
 								}
@@ -129,93 +123,122 @@ namespace CavePathFindingCoursework.Classes
 		/// Method <c>dijkstra</c> 
 		/// Implements Dijkstra's algorithm for a graph represented using adjacency matrix representation
 		/// </summary>
-		public void dijkstra(int startVertex)
+		public void dijkstra(int startCave)
 		{
-			int nVertices = this.adjacencyMatrix.GetLength(0);
+			int nCaves = this.adjacencyMatrix.GetLength(0);
 
-			// shortestDistances[i] will hold the 
-			// shortest distance from src to i 
-			double[] shortestDistances = new double[nVertices];
+			//ShortestDistances[i] will hold the shortest distance from source to i 
+			double[] shortestDistances = new double[nCaves];
 
-			// added[i] will true if vertex i is 
-			// included / in shortest path tree 
-			// or shortest distance from src to 
-			// i is finalized 
-			bool[] added = new bool[nVertices];
+			//Added[i] will true if cave i is included / in shortest path tree or shortest distance from source to i is finalized 
+			bool[] added = new bool[nCaves];
 
-			// Initialize all distances as 
-			// INFINITE and added[] as false 
-			for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
+			//Initialize all distances as INFINITE and added[] as false 
+			for (int caveIndex = 0; caveIndex < nCaves; caveIndex++)
 			{
-				shortestDistances[vertexIndex] = double.MaxValue;
-				added[vertexIndex] = false;
+				shortestDistances[caveIndex] = double.MaxValue;
+				added[caveIndex] = false;
 			}
 
-			// Distance of source vertex from 
-			// itself   is always 0 
-			shortestDistances[startVertex] = 0;
+			//Distance of source cave from itself is always 0 
+			shortestDistances[startCave] = 0;
 
-			// Parent array to store shortest 
-			// path tree 
-			int[] parents = new int[nVertices];
+			//Parent array to store shortest path tree 
+			int[] parents = new int[nCaves];
 
-			// The starting vertex does not 
-			// have a parent 
-			parents[startVertex] = NO_PARENT;
+			//The starting cave does not have a parent 
+			parents[startCave] = NO_PARENT;
 
-			// Find shortest path for all 
-			// vertices 
-			for (int i = 1; i < nVertices; i++)
+			// Find shortest path for all caves
+			for (int i = 1; i < nCaves; i++)
 			{
 
-				// Pick the minimum distance vertex 
-				// from the set of vertices not yet 
-				// processed. nearestVertex is 
-				// always equal to startNode in 
-				// first iteration. 
-				int nearestVertex = -1;
+				//Pick the minimum distance cave from the set of caves not yet processed. nearestCave is always equal to startNode in first iteration. 
+				int nearestCave = -1;
 				double shortestDistance = int.MaxValue;
-				for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
+				for (int caveIndex = 0; caveIndex < nCaves; caveIndex++)
 				{
-					if (!added[vertexIndex] && shortestDistances[vertexIndex] < shortestDistance)
+					if (!added[caveIndex] && shortestDistances[caveIndex] < shortestDistance)
 					{
-						nearestVertex = vertexIndex;
-						shortestDistance = shortestDistances[vertexIndex];
+						nearestCave = caveIndex;
+						shortestDistance = shortestDistances[caveIndex];
 					}
 				}
 
 				//If nothing found then all paths found and break out of loop
-				if (nearestVertex == -1)
+				if (nearestCave == -1)
 				{
 					break;
 				}
 
-				// Mark the picked vertex as 
-				// processed 
-				added[nearestVertex] = true;
+				//Mark the picked cave as processed 
+				added[nearestCave] = true;
 
-				// Update dist value of the 
-				// adjacent vertices of the 
-				// picked vertex. 
-				for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
+				//Update distance value of the adjacent caves of the picked cave. 
+				for (int caveIndex = 0; caveIndex < nCaves; caveIndex++)
 				{
-					double edgeDistance = this.adjacencyMatrix[nearestVertex, vertexIndex];
+					double edgeDistance = this.adjacencyMatrix[nearestCave, caveIndex];
 
-					if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < shortestDistances[vertexIndex]))
+					if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < shortestDistances[caveIndex]))
 					{
-						parents[vertexIndex] = nearestVertex;
-						shortestDistances[vertexIndex] = shortestDistance + edgeDistance;
+						parents[caveIndex] = nearestCave;
+						shortestDistances[caveIndex] = shortestDistance + edgeDistance;
 					}
 				}
 			}
 
 			//Store quickest path as string
-			returnPath(nVertices - 1, parents);
+			returnPath(nCaves - 1, parents);
 			//Print the quickest path to console
-			printQuickestPath(startVertex, shortestDistances, parents);
+			printQuickestPath(startCave, shortestDistances, parents);
 		}
 
 		//-------------------------------Utility Methods-------------------------------
+
+		/// <summary>
+		/// Utility Method <c>textSeperator</c> 
+		/// Takes a streamreader and reads the next character until a comma is reached.
+		/// It then returns the string
+		/// </summary>
+		private string textSeperator(StreamReader sr)
+		{
+			//Set string to empty
+			string text ="";
+				
+			//Read next character until a comma or end of file is reached 
+			while (!((char)sr.Peek()).Equals(',') && sr.Peek() > -1)
+			{
+				text = String.Format("{0}{1}", text, ((char)sr.Read()));
+			}
+				
+			//If it's not end of file then it's a comma and it needs to be read
+			if(!(sr.Peek() ==-1))
+            {
+				//Read stream reader to skip comma
+				sr.Read();
+			}
+
+			return text;
+		}
+
+		/// <summary>
+		/// Utility Method <c>endOfFile</c> 
+		/// Checks if it's an end of file
+		/// </summary>
+		private bool endOfFile(StreamReader sr)
+		{
+			//If it's end of file then update tuple item2 to return true
+			if (sr.Peek() == -1)
+			{
+				//If end of file then return true
+				return true;
+			}
+            else
+            {
+				//if not end of file, return false
+				return false;
+			}
+		}
 
 		/// <summary>
 		/// Utility Method <c>printMatrix</c> 
@@ -241,11 +264,11 @@ namespace CavePathFindingCoursework.Classes
 		/// Utility Method <c>printSolution</c> 
 		/// Prints the shortest path and other information to console
 		/// </summary>
-		private void printQuickestPath(int startVertex, double[] distances, int[] parents)
+		private void printQuickestPath(int startCave, double[] distances, int[] parents)
 		{
 			int nVertices = distances.Length;
-			Console.Write("Vertex\t\t Distance\t\tPath");
-			Console.Write("\n" + (startVertex + 1) + " -> ");
+			Console.Write("Cave\t\t Distance\t\tPath");
+			Console.Write("\n" + (startCave + 1) + " -> ");
 			Console.Write(nVertices + " \t ");
 			Console.Write(Math.Round(distances[nVertices - 1],2) + "\t\t\t" + this.quickestPath.Trim());
 		}
@@ -254,19 +277,19 @@ namespace CavePathFindingCoursework.Classes
 		/// Utility Method <c>returnPath</c> 
 		/// Returns the quickest path from source to target in a format which can be read to file. 
 		/// </summary>
-		private void returnPath(int currentVertex, int[] parents)
+		private void returnPath(int currentCave, int[] parents)
 		{
 			//Base-case: current cave equals source 
-			if (currentVertex == NO_PARENT)
+			if (currentCave == NO_PARENT)
 			{
 				return;
 			}
 
 			//Recursive call
-			returnPath(parents[currentVertex], parents);
+			returnPath(parents[currentCave], parents);
 
-			//string containing path
-			this.quickestPath = String.Format("{0} {1}", this.quickestPath, (currentVertex+1));
+			//String containing path
+			this.quickestPath = String.Format("{0} {1}", this.quickestPath, (currentCave+1));
 		}
 	}
 }

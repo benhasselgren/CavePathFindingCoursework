@@ -1,7 +1,8 @@
 {
   "profiles": {
     "CavePathFindingCoursework": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "generated5000-1"
     }
   }
 }

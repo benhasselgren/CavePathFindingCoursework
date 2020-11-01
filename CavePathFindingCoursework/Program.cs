@@ -17,11 +17,11 @@ namespace CavePathFindingCoursework
 		/// </summary>
 		public static void Main(String[] args)
 		{
-			//If there is an input then length will be >0
-			int isInput = args.Length;
-
 			try
 			{
+				//If there is an input then args length will be >0
+				int isInput = args.Length;
+
 				if (isInput >= 1)
 				{
 					//Create new savern path structure, passing in the filename that contains all the data.
@@ -43,7 +43,8 @@ namespace CavePathFindingCoursework
 			}
             catch(Exception ex)
 			{
-				Console.Write(String.Format("ERROR: {0}",ex.Message));
+				//Output any errors to console
+				Console.Write(String.Format("ERROR: {0}", ex.Message));
 			}
 		}
 	}
